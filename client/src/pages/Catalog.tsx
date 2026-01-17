@@ -75,7 +75,7 @@ export default function Catalog() {
                                     <div className="relative h-48 bg-slate-100">
                                          {/* Unsplash placeholder car image */}
                                         <img 
-                                            src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80" 
+                                            src={vehicle.imageUrl || "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&q=80"} 
                                             alt={vehicle.vehicleName}
                                             className="w-full h-full object-cover"
                                         />

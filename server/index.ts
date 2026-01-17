@@ -4,6 +4,10 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL must be set. Did you forget to create a .env file?");
+}
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -22,6 +26,7 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+app.use('/uploads', express.static('server/uploads'));
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {

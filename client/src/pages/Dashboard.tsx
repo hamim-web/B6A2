@@ -85,7 +85,7 @@ function VehiclesList() {
                 <Card key={vehicle.id} className="flex flex-col md:flex-row items-center p-4 gap-6">
                     <div className="h-24 w-24 bg-slate-100 rounded-lg flex-shrink-0 overflow-hidden">
                         <img 
-                            src={vehicle.imageUrl || "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=200&q=80"} 
+                            src={vehicle.imageUrl ? vehicle.imageUrl : "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=200&q=80"} 
                             className="w-full h-full object-cover" 
                             alt={vehicle.vehicleName} 
                         />
@@ -188,17 +188,49 @@ function BookingsList({ userId }: { userId?: number }) {
 
 function AddVehicleDialog() {
     const [open, setOpen] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const { toast } = useToast();
     const { mutate: create, isPending } = useCreateVehicle();
     const { register, handleSubmit, reset, formState: { errors } } = useForm<z.infer<typeof insertVehicleSchema>>({
         resolver: zodResolver(insertVehicleSchema)
     });
 
-    const onSubmit = (data: z.infer<typeof insertVehicleSchema>) => {
-        create(data, {
+    const onSubmit = async (data: z.infer<typeof insertVehicleSchema>) => {
+        let imageUrl = '';
+        if (selectedFile) {
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+            try {
+                const uploadResponse = await fetch('/api/v1/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const uploadData = await uploadResponse.json();
+                if (uploadData.success) {
+                    imageUrl = uploadData.data.filePath;
+                } else {
+                    toast({
+                        title: "Image Upload Failed",
+                        description: uploadData.message,
+                        variant: "destructive"
+                    });
+                    return;
+                }
+            } catch (uploadError: any) {
+                toast({
+                    title: "Image Upload Error",
+                    description: uploadError.message,
+                    variant: "destructive"
+                });
+                return;
+            }
+        }
+
+        create({ ...data, imageUrl }, {
             onSuccess: () => {
                 setOpen(false);
                 reset();
+                setSelectedFile(null); // Clear selected file
                 toast({
                     title: "Vehicle Created",
                     description: "The new vehicle has been added to the fleet.",
@@ -225,7 +257,16 @@ function AddVehicleDialog() {
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
                     <Input label="Vehicle Name" {...register('vehicleName')} error={errors.vehicleName?.message} />
-                    <Input label="Image URL" {...register('imageUrl')} error={errors.imageUrl?.message} />
+                    
+                    <div>
+                        <label className="text-sm font-medium text-slate-700 ml-1">Vehicle Image</label>
+                        <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+                            className="flex h-12 w-full rounded-xl border-2 border-slate-200 bg-white px-4 py-2 text-sm focus-visible:outline-none focus-visible:border-primary"
+                        />
+                    </div>
                     
                     <div className="grid grid-cols-2 gap-4">
                          <div className="space-y-1.5">

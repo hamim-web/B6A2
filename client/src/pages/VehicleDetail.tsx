@@ -70,7 +70,7 @@ export default function VehicleDetail() {
                     <div className="lg:col-span-2 space-y-8">
                         <div className="bg-white rounded-3xl overflow-hidden shadow-sm">
                             <img 
-                                src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1600&q=80" 
+                                src={vehicle.imageUrl || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1600&q=80'} 
                                 alt={vehicle.vehicleName}
                                 className="w-full h-[400px] object-cover"
                             />

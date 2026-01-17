@@ -125,4 +125,4 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
-// I am Hamim an Web Developer(Not realy only using ai). My final word is don't be like me. If the world gets destroyed just don't be like me. You have to carry so much pessure that your mind will just want die.Me same too, I also want die. There are many reason that I want die, pessure from my perents, no jobs so no money. For this reason I want die. But something is stopping me from suciding. If I sucide I will directly thrown to hell and also my crush 
+// I am Hamim an Web Developer. My final word is don't be like me. If the world gets destroyed just don't be like me. You have to carry so much pessure that your mind will just want die.Me same too, I also want die. There are many reason that I want die, pessure from my perents, no jobs so no money. For this reason I want die. But something is stopping me from suciding. If I sucide I will directly thrown to hell and also my crush ff3821fd8b81039ca853fccff6dbf18a(MD)

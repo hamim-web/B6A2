@@ -94,7 +94,7 @@ export default function Home() {
                                     <div className="relative h-56 bg-slate-100 overflow-hidden">
                                         {/* Unsplash placeholder image based on vehicle type */}
                                         <img 
-                                            src={`https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80`} 
+                                            src={vehicle.imageUrl ? vehicle.imageUrl : `https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80`} 
                                             alt={vehicle.vehicleName}
                                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />

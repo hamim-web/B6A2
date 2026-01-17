@@ -53,7 +53,7 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
 // === ZOD SCHEMAS ===
 
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
-export const insertVehicleSchema = createInsertSchema(vehicles).omit({ id: true, createdAt: true });
+export const insertVehicleSchema = createInsertSchema(vehicles).omit({ id: true, createdAt: true }).partial({ imageUrl: true });
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true, createdAt: true, totalPrice: true, status: true });
 
 // Types

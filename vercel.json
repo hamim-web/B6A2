@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "outputDirectory": "dist/public" }
+    },
+    {
+      "src": "dist/index.cjs",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/dist/index.cjs" },
+    { "src": "/uploads/(.*)", "dest": "/server/uploads/$1" },
+    { "src": "/(.*)", "dest": "/dist/public/$1" }
+  ]
+}

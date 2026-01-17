@@ -25,6 +25,8 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+import { upload } from './upload';
+
 const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
     const user = (req as any).user;
     if (user.role !== 'admin') {
@@ -33,11 +35,33 @@ const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
+async function getDirectImageUrl(pageUrl: string): Promise<string> {
+    if (!pageUrl || !pageUrl.includes('ibb.co')) {
+        return pageUrl;
+    }
+
+    try {
+        const response = await fetch(pageUrl);
+        const html = await response.text();
+        const match = html.match(/<meta property="og:image" content="(.*?)">/);
+        return match ? match[1] : pageUrl;
+    } catch (error) {
+        console.error('Error fetching direct image URL:', error);
+        return pageUrl;
+    }
+}
+
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
   app.use('/api/v1/auth', authRoutes); // Mount authentication routes
 
   // Auth Routes (removed existing signup and signin as they are now in authRoutes)
 
+  app.post('/api/v1/upload', upload.single('image'), (req, res) => {
+      if (!req.file) {
+          return res.status(400).json({ success: false, message: 'No file uploaded' });
+      }
+      res.json({ success: true, message: 'File uploaded successfully', data: { filePath: `/uploads/${req.file.filename}` } });
+  });
 
   // Vehicle Routes
   app.get(api.vehicles.list.path, async (req, res) => {
@@ -56,6 +80,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.post(api.vehicles.create.path, authenticateToken, requireAdmin, async (req, res) => {
       try {
           const input = api.vehicles.create.input.parse(req.body);
+          if (input.imageUrl) {
+              input.imageUrl = await getDirectImageUrl(input.imageUrl);
+          }
           const vehicle = await storage.createVehicle(input);
           res.status(201).json({ success: true, message: "Vehicle created successfully", data: vehicle });
       } catch (error) {
@@ -69,6 +96,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.put(api.vehicles.update.path, authenticateToken, requireAdmin, async (req, res) => {
       try {
           const input = api.vehicles.update.input.parse(req.body);
+          if (input.imageUrl) {
+              input.imageUrl = await getDirectImageUrl(input.imageUrl);
+          }
           const vehicle = await storage.updateVehicle(Number(req.params.vehicleId), input);
           res.json({ success: true, message: "Vehicle updated successfully", data: vehicle });
       } catch (error) {
@@ -95,7 +125,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           // Calculate total price
           const start = new Date(input.rentStartDate);
           const end = new Date(input.rentEndDate);
-          const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+          const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1; // Add 1 to include the end date
           const totalPrice = days * vehicle.dailyRentPrice;
 
           const booking = await storage.createBooking({
@@ -220,6 +250,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           availabilityStatus: "available"
       });
       console.log("Seeded vehicles");
+  }
+
+  const vehicleToUpdate = await storage.getVehicle(5);
+  if (vehicleToUpdate && vehicleToUpdate.imageUrl === 'https://ibb.co.com/39yy6Pr7') {
+      await storage.updateVehicle(5, { imageUrl: 'https://i.ibb.co/4nZZv0m7/download.jpg' });
+      console.log('Updated vehicle with ID 5 to have the correct image URL');
   }
 
   return httpServer;
